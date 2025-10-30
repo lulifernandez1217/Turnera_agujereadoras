@@ -1,56 +1,68 @@
 import { useState, useEffect } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
-import axios from "axios";
+import CalendarView from "./componentes/CalendarView";
+import MachineList from "./componentes/MachineList";
+import { sampleEvents } from "./Data/SampleEvents";
+import type { BookingEvent, Machine } from "./types";
 
-function App() {
-  const [count, setCount] = useState(0);
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
-  const url = `${import.meta.env.BASE_URL}/api/`;
-  console.log(url);
-
-  useEffect(() => {
-    axios
-      .get(url)
-      .then((response) => {
-        setData(response.data); // Access the response data
-      })
-      .catch((error) => {
-        setError(error); // Handle any errors
-        console.error("Error fetching data:", error);
-      });
-  }, []); // Empty dependency a
-  if (error) return <div>Error: {error}</div>;
-  if (!data) return <div>Loading...</div>;
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-      <h1>Fetched Data:</h1>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
-    </>
-  );
+function replacer(key: string, value: any) {
+  if (value instanceof Date)
+    return { __type: "Date", value: value.toISOString() };
+  return value;
 }
 
-export default App;
+function reviver(key: string, value: any) {
+  if (value && value.__type === "Date") return new Date(value.value);
+  return value;
+}
+
+export default function App() {
+  const [events, setEvents] = useState<BookingEvent[]>(() => {
+    try {
+      const stored = localStorage.getItem("turnos");
+      return stored ? JSON.parse(stored, reviver) : sampleEvents;
+    } catch {
+      return sampleEvents;
+    }
+  });
+
+  const [machines] = useState<Machine[]>([
+    { id: "M1", name: "Agujereadora 1", color: "#1E88E5" },
+    { id: "M2", name: "Agujereadora 2", color: "#43A047" },
+    { id: "M3", name: "Agujereadora 3", color: "#F4511E" },
+  ]);
+
+  useEffect(() => {
+    localStorage.setItem("turnos", JSON.stringify(events, replacer));
+  }, [events]);
+
+  const addEvent = (e: BookingEvent) => setEvents((prev) => [...prev, e]);
+  const updateEvent = (updated: BookingEvent) =>
+    setEvents((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
+  const deleteEvent = (id: string) =>
+    setEvents((prev) => prev.filter((e) => e.id !== id));
+
+  return (
+    <div className="app-shell">
+      <header className="app-header">
+        <h1>Turnera — Agujereadoras</h1>
+        <p className="sub">Reserva turnos para las máquinas de la escuela</p>
+      </header>
+
+      <main className="main-grid">
+        <aside className="sidebar">
+          <MachineList machines={machines} />
+        </aside>
+
+        <section className="calendar-area">
+          <CalendarView
+            events={events}
+            machines={machines}
+            onAdd={addEvent}
+            onUpdate={updateEvent}
+            onDelete={deleteEvent}
+          />
+        </section>
+      </main>
+    </div>
+  );
+}

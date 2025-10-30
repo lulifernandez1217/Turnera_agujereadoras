@@ -1,42 +1,177 @@
+:root {
+  --bg: #f5f7fb;
+  --card: #fff;
+  --muted: #666;
+  --accent: #1e88e5;
+  --primary: #1e88e5;
+}
+
+/* Reset básico */
+* {
+  box-sizing: border-box;
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+}
+body,
+html,
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: #222;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.app-shell {
+  max-width: 1200px;
+  margin: 18px auto;
+  padding: 16px;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+.app-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
 }
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.app-header h1 {
+  margin: 0;
+  font-size: 1.4rem;
 }
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.sub {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 4px;
 }
 
+/* layout */
+.main-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 16px;
+}
+/*.sidebar{}*/
+
+/* cards */
 .card {
-  padding: 2em;
+  background: var(--card);
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(20, 20, 40, 0.05);
+}
+.muted {
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
-.read-the-docs {
-  color: #888;
+.machine-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+}
+.machine-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px dashed #eee;
+}
+.swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.legend {
+  font-size: 0.85rem;
+  margin-top: 10px;
+  color: #70757a;
+}
+
+/* calendar tweaks to mimic Google Calendar */
+.rbc-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.rbc-btn-group button {
+  background: none;
+  border: 1px solid #e0e0e0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-right: 6px;
+}
+.rbc-btn-group .rbc-active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+.rbc-month-view,
+.rbc-time-view {
+  background: transparent;
+}
+.rbc-event {
+  box-shadow: none;
+  font-size: 0.85rem;
+  padding: 4px 6px;
+}
+
+/* modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 16, 20, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.modal {
+  width: 420px;
+  padding: 16px;
+  border-radius: 10px;
+}
+.form label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+.form input,
+.form select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  margin-top: 6px;
+}
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+.btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 0;
+  cursor: pointer;
+}
+.btn.ghost {
+  background: transparent;
+  border: 1px solid #ddd;
+}
+.btn.primary {
+  background: var(--primary);
+  color: white;
+}
+.btn.danger {
+  background: #e53935;
+  color: white;
+}
+
+/* footer */
+.app-footer {
+  text-align: center;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.85rem;
 }
