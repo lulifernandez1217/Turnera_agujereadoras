@@ -1,10 +1,12 @@
 import express from 'express'
 // import path from 'path'
 import { sequelize, Turno, Alumno, Agujereadora } from './models/index.js';
+import { Op } from 'sequelize';
 
 const app = express()
 const port = 3000
 await sequelize.sync({ alter: true }); // 'alter: true' ajusta tablas existentes sin borrarlas
+app.use(express.json());
 
 
 app.get('/healthcheck', (req, res) => {
@@ -22,15 +24,68 @@ app.get('/api/turnos', async (req, res) => {
   }
 });
 
-app.post('/api/turnos', express.json(), async (req, res) => {
-    try {
-        const nuevoTurno = await Turno.create(req.body);
-        res.status(201).json(nuevoTurno);
+app.post('/api/turnos', async (req, res) => {
+  try {
+    const { alumnoId, agujereadoraId, fechaInicio, fechaFin } = req.body;
+
+    const inicio = new Date(fechaInicio);
+    const fin = new Date(fechaFin);
+
+    // Validaciones básicas
+    if (!alumnoId || !agujereadoraId || !fechaInicio || !fechaFin) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios' });
     }
-    catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Error creando turno' });
+    if (inicio >= fin) {
+      return res.status(400).json({ error: 'La fecha de inicio debe ser anterior a la de fin' });
     }
+
+    // 🕐 Margen permitido: 1 minuto (en milisegundos)
+    const margen = 1 * 60 * 1000;
+
+    // 🔍 Verificar superposición para la misma agujereadora
+    const solapadoAgujereadora = await Turno.findOne({
+      where: {
+        agujereadoraId,
+        [Op.and]: [
+          { fechaInicio: { [Op.lt]: new Date(fin.getTime() - margen) } },
+          { fechaFin: { [Op.gt]: new Date(inicio.getTime() + margen) } }
+        ]
+      }
+    });
+
+    if (solapadoAgujereadora) {
+      return res.status(400).json({ error: 'La agujereadora ya está reservada en ese horario' });
+    }
+
+    // 🔍 Verificar superposición para el mismo alumno
+    const solapadoAlumno = await Turno.findOne({
+      where: {
+        alumnoId,
+        [Op.and]: [
+          { fechaInicio: { [Op.lt]: new Date(fin.getTime() - margen) } },
+          { fechaFin: { [Op.gt]: new Date(inicio.getTime() + margen) } }
+        ]
+      }
+    });
+
+    if (solapadoAlumno) {
+      return res.status(400).json({ error: 'El alumno ya tiene un turno en ese horario' });
+    }
+
+    // ✅ Crear turno si no hay solapamientos
+    const nuevoTurno = await Turno.create({
+      alumnoId,
+      agujereadoraId,
+      fechaInicio,
+      fechaFin,
+    });
+
+    res.status(201).json(nuevoTurno);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error creando turno' });
+  }
 });
 
 app.get('/api/agujereadoras', async (req, res) => {
@@ -69,6 +124,7 @@ app.get('/api/alumno/:id', async (req, res) => {
     }
 });
 
+
 app.get('/api/alumnos', async (req, res) => {
     try {
         const alumnos = await Alumno.findAll(); // Devuelve todos los alumnos  
@@ -88,6 +144,63 @@ app.post('/api/alumnos', express.json(), async (req, res) => {
         res.status(500).json({ error: 'Error creando alumno' });
     }
 });
+
+// DELETE alumno por ID
+app.delete('/api/alumnos/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const alumno = await Alumno.findByPk(id);
+
+    if (!alumno) {
+      return res.status(404).json({ error: 'Alumno no encontrado' });
+    }
+
+    await alumno.destroy();
+    res.json({ message: `Alumno con id ${id} eliminado correctamente.` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error eliminando alumno' });
+  }
+});
+
+
+// DELETE agujereadora por ID
+app.delete('/api/agujereadoras/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const agujereadora = await Agujereadora.findByPk(id);
+
+    if (!agujereadora) {
+      return res.status(404).json({ error: 'Agujereadora no encontrada' });
+    }
+
+    await agujereadora.destroy();
+    res.json({ message: `Agujereadora con id ${id} eliminada correctamente.` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error eliminando agujereadora' });
+  }
+});
+
+
+// DELETE turno por ID
+app.delete('/api/turnos/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const turno = await Turno.findByPk(id);
+
+    if (!turno) {
+      return res.status(404).json({ error: 'Turno no encontrado' });
+    }
+
+    await turno.destroy();
+    res.json({ message: `Turno con id ${id} eliminado correctamente.` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error eliminando turno' });
+  }
+});
+
 
 /**
  * Endpoints de React (comentado porque no hay frontend aun)
