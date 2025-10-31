@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:18
+    container_name: db
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      TZ: America/Argentina/Buenos_Aires
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # adminer:
+  #   image: adminer:latest
+  #   container_name: adminer
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   environment:
+  #     ADMINER_DEFAULT_SERVER: db
+  #   ports:
+  #     - "8081:8080"
+
+  # app:
+  #   build: .
+  #   container_name: app
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   environment:
+  #     SPRING_PROFILES_ACTIVE: docker
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/pdi-db
+  #     SPRING_DATASOURCE_USERNAME: admin
+  #     SPRING_DATASOURCE_PASSWORD: admin
+  #     SPRING_JPA_HIBERNATE_DDL_AUTO: update
+  #     SOLICITUDES_BASEURL: https://solicitudes-ljke.onrender.com
+  #     ETIQUETADOR_URL: https://api.apilayer.com/image_labeling/url?url={imageUrl}
+  #     ETIQUETADOR_APIKEY: w3kXCbqaFSqqZvEKZh8pxQSOON7PFCoA
+  #     OCR_URL: https://api.ocr.space/parse/imageurl?apikey={apiKey}&url={imageUrl}
+  #     OCR_APIKEY: K87071111588957
+  #   ports:
+  #     - "8080:8080"
+
+volumes:
+  pgdata:
