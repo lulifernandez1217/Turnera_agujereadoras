@@ -2,11 +2,15 @@ import express from 'express'
 // import path from 'path'
 import { sequelize, Turno, Alumno, Agujereadora } from './models/index.js';
 import { Op } from 'sequelize';
+import cors from 'cors';
+
+
 
 const app = express()
 const port = 3000
 await sequelize.sync({ alter: true }); // 'alter: true' ajusta tablas existentes sin borrarlas
 app.use(express.json());
+app.use(cors())
 
 
 app.get('/healthcheck', (req, res) => {
@@ -26,7 +30,7 @@ app.get('/api/turnos', async (req, res) => {
 
 app.post('/api/turnos', async (req, res) => {
   try {
-    const { alumnoId, agujereadoraId, fechaInicio, fechaFin } = req.body;
+    const { alumnoId, agujereadoraId, fechaInicio, fechaFin, titulo } = req.body;
 
     const inicio = new Date(fechaInicio);
     const fin = new Date(fechaFin);
@@ -78,6 +82,7 @@ app.post('/api/turnos', async (req, res) => {
       agujereadoraId,
       fechaInicio,
       fechaFin,
+      titulo
     });
 
     res.status(201).json(nuevoTurno);

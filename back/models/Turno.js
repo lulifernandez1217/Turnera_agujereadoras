@@ -18,6 +18,10 @@ const Turno = sequelize.define('Turno', {
     type: DataTypes.DATE,
     allowNull: false,
   },
+  titulo: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  }
   
 });
 
