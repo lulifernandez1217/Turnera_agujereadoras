@@ -28,7 +28,8 @@ export const useFetchMachines = (): UseFetchMachinesReturn => {
     setError(null);
     
     try {
-      const response = await axios.get<MachineFromAPI[]>('http://localhost:3000/api/agujereadoras');
+      const response = await axios.get<MachineFromAPI[]>('https://turnera-agujereadoras.onrender.com/api/agujereadoras');
+    //   const response = await axios.get<MachineFromAPI[]>('http://localhost:3000/api/agujereadoras');
       
       // Mapear solo los campos que necesitamos
       const mappedMachines: Machine[] = response.data.map((agujereadora: MachineFromAPI) => ({

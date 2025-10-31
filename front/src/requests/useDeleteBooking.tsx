@@ -16,7 +16,8 @@ export const useDeleteBooking = (onSuccess?: () => void): UseDeleteBookingReturn
     setError(null);
     
     try {
-      await axios.delete(`http://localhost:3000/api/turnos/${id}`);
+      await axios.delete(`https://turnera-agujereadoras.onrender.com/api/turnos/${id}`);
+    //   await axios.delete(`http://localhost:3000/api/turnos/${id}`);
       
       // Si todo sale bien, llamar al callback de éxito (refetch)
       if (onSuccess) {

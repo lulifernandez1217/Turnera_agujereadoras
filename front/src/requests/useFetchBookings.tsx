@@ -32,7 +32,8 @@ export const useFetchBookings = (): UseFetchBookingsReturn => {
     setError(null);
     
     try {
-      const response = await axios.get<BookingFromAPI[]>('http://localhost:3000/api/turnos');
+      const response = await axios.get<BookingFromAPI[]>('https://turnera-agujereadoras.onrender.com/api/turnos');
+    //   const response = await axios.get<BookingFromAPI[]>('http://localhost:3000/api/turnos');
       
       // Mapear solo los campos que necesitamos
       const mappedBookings: BookingEvent[] = response.data.map((turno: BookingFromAPI) => ({

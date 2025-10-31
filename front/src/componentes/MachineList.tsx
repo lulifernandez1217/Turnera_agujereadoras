@@ -11,7 +11,7 @@ const MachineList: React.FC<Props> = ({ machines }) => (
     <ul>
       {machines.map((m) => (
         <li key={m.id} className="machine-row">
-          <span className="swatch" style={{ background: m.color }} />
+          <span className="swatch" style={{ background: "#1E88E5"}} />
           <div>
             <strong>{m.name}</strong>
             <div className="muted">ID: {m.id}</div>

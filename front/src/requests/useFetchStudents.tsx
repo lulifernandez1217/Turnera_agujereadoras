@@ -28,7 +28,8 @@ export const useFetchStudents = (): UseFetchStudentsReturn => {
     setError(null);
     
     try {
-      const response = await axios.get<StudentFromAPI[]>('http://localhost:3000/api/alumnos');
+      const response = await axios.get<StudentFromAPI[]>('https://turnera-agujereadoras.onrender.com/api/alumnos');
+      // const response = await axios.get<StudentFromAPI[]>('http://localhost:3000/api/alumnos');
       
       // Mapear solo los campos que necesitamos
       const mappedStudents: Student[] = response.data.map((alumno: StudentFromAPI) => ({
