@@ -6,15 +6,15 @@ import cors from 'cors';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
-// Crear __dirname para ES Modules
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Ahora puedes usar __dirname normalmente
+
 
 const app = express()
 const port = 3000
-await sequelize.sync({ alter: true }); // ⚠️ CUIDADO: Borra todas las tablas y las recrea
+await sequelize.sync({ alter: true }); 
 app.use(express.json());
 app.use(cors())
 
@@ -22,11 +22,11 @@ app.use(cors())
 app.get('/healthcheck', (req, res) => {
   res.send('Hello World!')
 })
-await sequelize.sync({ alter: true }); // 'alter: true' ajusta tablas existentes sin borrarlas
+await sequelize.sync({ alter: true });
 
 app.get('/api/turnos', async (req, res) => {
   try {
-    const turnos = await Turno.findAll(); // Devuelve todos los turnos
+    const turnos = await Turno.findAll(); 
     res.json(turnos);
   } catch (err) {
     console.error(err);
@@ -41,7 +41,7 @@ app.post('/api/turnos', async (req, res) => {
     const inicio = new Date(fechaInicio);
     const fin = new Date(fechaFin);
 
-    // Validaciones básicas
+    
     if (!alumnoId || !agujereadoraId || !fechaInicio || !fechaFin) {
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
     }
@@ -49,7 +49,7 @@ app.post('/api/turnos', async (req, res) => {
       return res.status(400).json({ error: 'La fecha de inicio debe ser anterior a la de fin' });
     }
 
-    // ✅ NUEVO: Verificar que el alumno existe
+   
     const alumno = await Alumno.findByPk(alumnoId);
     if (!alumno) {
       return res.status(404).json({ 
@@ -57,7 +57,7 @@ app.post('/api/turnos', async (req, res) => {
       });
     }
 
-    // ✅ NUEVO: Verificar que la agujereadora existe
+    
     const agujereadora = await Agujereadora.findByPk(agujereadoraId);
     if (!agujereadora) {
       return res.status(404).json({ 
@@ -65,10 +65,10 @@ app.post('/api/turnos', async (req, res) => {
       });
     }
 
-    // 🕐 Margen permitido: 1 minuto (en milisegundos)
+    
     const margen = 1 * 60 * 1000;
 
-    // 🔍 Verificar superposición para la misma agujereadora
+   
     const solapadoAgujereadora = await Turno.findOne({
       where: {
         agujereadoraId,
@@ -83,7 +83,7 @@ app.post('/api/turnos', async (req, res) => {
       return res.status(400).json({ error: 'La agujereadora ya está reservada en ese horario' });
     }
 
-    // 🔍 Verificar superposición para el mismo alumno
+   
     const solapadoAlumno = await Turno.findOne({
       where: {
         alumnoId,
@@ -98,7 +98,7 @@ app.post('/api/turnos', async (req, res) => {
       return res.status(400).json({ error: 'El alumno ya tiene un turno en ese horario' });
     }
 
-    // ✅ Crear turno si no hay solapamientos
+    
     const nuevoTurno = await Turno.create({
       alumnoId,
       agujereadoraId,
@@ -110,14 +110,14 @@ app.post('/api/turnos', async (req, res) => {
     res.status(201).json(nuevoTurno);
 
   } catch (err) {
-    console.error('Error completo:', err); // 👈 Más detalle en los logs
+    console.error('Error completo:', err); 
     res.status(500).json({ error: 'Error creando turno' });
   }
 });
 
 app.get('/api/agujereadoras', async (req, res) => {
     try {
-        const agujereadoras = await Agujereadora.findAll(); // Devuelve todas las agujereadoras  
+        const agujereadoras = await Agujereadora.findAll();   
         res.json(agujereadoras);
     } catch (err) {
         console.error(err);
@@ -135,7 +135,7 @@ app.post('/api/agujereadoras', express.json(), async (req, res) => {
     }
 });
 
-// realiza un endpoint que permita obtener la agujereadora de un alumno por su ID
+
 app.get('/api/alumno/:id', async (req, res) => {
     try {
         const alumno = await Alumno.findByPk(req.params.id, {
@@ -172,7 +172,7 @@ app.post('/api/alumnos', express.json(), async (req, res) => {
     }
 });
 
-// DELETE alumno por ID
+
 app.delete('/api/alumnos/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -191,7 +191,7 @@ app.delete('/api/alumnos/:id', async (req, res) => {
 });
 
 
-// DELETE agujereadora por ID
+
 app.delete('/api/agujereadoras/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -210,7 +210,7 @@ app.delete('/api/agujereadoras/:id', async (req, res) => {
 });
 
 
-// DELETE turno por ID
+
 app.delete('/api/turnos/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -228,12 +228,6 @@ app.delete('/api/turnos/:id', async (req, res) => {
   }
 });
 
-
-/**
- * Endpoints de React (comentado porque no hay frontend aun)
- */
-
-// para servir los archivos estaticas de React
 app.use(express.static(join(__dirname, '..', 'front', 'dist')));
 
 app.get("/", (req, res) => {

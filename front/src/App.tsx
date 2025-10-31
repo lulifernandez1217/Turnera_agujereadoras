@@ -66,7 +66,7 @@ export default function App() {
             <StudentList students={students} />
           )}
 
-          {/* Mostrar errores de creación/eliminación */}
+        
           {createError && (
             <div style={{ color: '#d32f2f', padding: '10px', marginTop: '10px' }}>
               ❌ {createError}
@@ -78,7 +78,7 @@ export default function App() {
             </div>
           )}
 
-          {/* Indicador de operación en curso */}
+          
           {(creatingBooking || deletingBooking) && (
             <div style={{ padding: '10px', marginTop: '10px' }}>
               ⏳ {creatingBooking ? 'Creando turno...' : 'Eliminando turno...'}
