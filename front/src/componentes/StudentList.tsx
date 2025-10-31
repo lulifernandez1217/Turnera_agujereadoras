@@ -12,7 +12,7 @@ const StudentList: React.FC<Props> = ({ students }) => (
       {students.map((m) => (
         <li key={m.id} className="students-row">
           <div>
-            <strong>{m.name}</strong>
+            <strong>{m.name} {m.surname}</strong>
             <div className="muted">ID: {m.id}</div>
           </div>
         </li>
