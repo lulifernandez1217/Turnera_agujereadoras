@@ -1,10 +1,21 @@
 // config/db.js
 import { Sequelize } from 'sequelize';
+import dotenv from 'dotenv';
 
-const sequelize = new Sequelize('db', 'admin', 'admin', {
-  host: 'localhost',
-  dialect: 'postgres',
-});
+dotenv.config();
+
+const sequelize = new Sequelize(
+  process.env.DATABASE_URL || 'postgres://admin:admin@localhost:5432/db',
+  {
+    dialect: 'postgres',
+    dialectOptions: {
+      ssl: process.env.NODE_ENV === 'production' 
+        ? { rejectUnauthorized: false } 
+        : false
+    },
+    logging: process.env.NODE_ENV === 'development' ? console.log : false
+  }
+);
 
 try {
   await sequelize.authenticate();

@@ -1,14 +1,20 @@
 import express from 'express'
-// import path from 'path'
+//import path from 'path'
 import { sequelize, Turno, Alumno, Agujereadora } from './models/index.js';
 import { Op } from 'sequelize';
 import cors from 'cors';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
+// Crear __dirname para ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
+// Ahora puedes usar __dirname normalmente
 
 const app = express()
 const port = 3000
-await sequelize.sync({ alter: true }); // 'alter: true' ajusta tablas existentes sin borrarlas
+await sequelize.sync({ alter: true }); // ⚠️ CUIDADO: Borra todas las tablas y las recrea
 app.use(express.json());
 app.use(cors())
 
@@ -41,6 +47,22 @@ app.post('/api/turnos', async (req, res) => {
     }
     if (inicio >= fin) {
       return res.status(400).json({ error: 'La fecha de inicio debe ser anterior a la de fin' });
+    }
+
+    // ✅ NUEVO: Verificar que el alumno existe
+    const alumno = await Alumno.findByPk(alumnoId);
+    if (!alumno) {
+      return res.status(404).json({ 
+        error: `El alumno con ID ${alumnoId} no existe` 
+      });
+    }
+
+    // ✅ NUEVO: Verificar que la agujereadora existe
+    const agujereadora = await Agujereadora.findByPk(agujereadoraId);
+    if (!agujereadora) {
+      return res.status(404).json({ 
+        error: `La agujereadora con ID ${agujereadoraId} no existe` 
+      });
     }
 
     // 🕐 Margen permitido: 1 minuto (en milisegundos)
@@ -88,7 +110,7 @@ app.post('/api/turnos', async (req, res) => {
     res.status(201).json(nuevoTurno);
 
   } catch (err) {
-    console.error(err);
+    console.error('Error completo:', err); // 👈 Más detalle en los logs
     res.status(500).json({ error: 'Error creando turno' });
   }
 });
@@ -212,13 +234,13 @@ app.delete('/api/turnos/:id', async (req, res) => {
  */
 
 // para servir los archivos estaticas de React
-// app.use(express.static(path.join(__dirname, '..', 'frontend', 'build')));
+app.use(express.static(join(__dirname, '..', 'front', 'dist')));
 
-// Para redirigir cualquier peticion que no sea un endpoint de la API a React
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, '..', 'frontend', 'build', 'index.html'));
-// });
+app.get("/", (req, res) => {
+    res.sendFile(join(__dirname, '..', 'front', 'dist', 'index.html'));
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
+
