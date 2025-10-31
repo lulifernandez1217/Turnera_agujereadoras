@@ -1,7 +1,7 @@
 export interface Machine {
   id: string;
   name: string;
-  color: string;
+  laboratorio: string; // laboratorio
 }
 export interface Student {
   id: string;

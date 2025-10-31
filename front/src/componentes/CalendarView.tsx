@@ -65,12 +65,10 @@ const CalendarView: React.FC<Props> = ({
     }
   };
 
-  const eventStyleGetter = (event: BookingEvent) => {
-    const machine = machines.find((m) => m.id === event.machineId);
-    const color = machine ? machine.color : "#1E88E5";
+  const eventStyleGetter = () => {
     return {
       style: {
-        backgroundColor: color,
+        backgroundColor: "#1E88E5",
         color: "white",
         borderRadius: "6px",
         border: "0",

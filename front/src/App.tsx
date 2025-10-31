@@ -1,61 +1,39 @@
-import { useState, useEffect } from "react";
 import CalendarView from "./componentes/CalendarView";
 import MachineList from "./componentes/MachineList";
-import { sampleEvents } from "./Data/SampleEvents";
-import type { BookingEvent, Machine, Student} from "./types";
+import type { BookingEvent } from "./types";
 import StudentList from "./componentes/StudentList";
-
-function replacer(_key: string, value: unknown) {
-  if (value instanceof Date)
-    return { __type: "Date", value: value.toISOString() };
-  return value;
-}
-
-function reviver(_key: string, value: unknown) {
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    "__type" in (value as Record<string, unknown>)
-  ) {
-    const val = value as { __type: string; value: string };
-    if (val.__type === "Date") {
-      return new Date(val.value);
-    }
-  }
-  return value;
-}
+import { useFetchStudents } from "./requests/useFetchStudents";
+import { useFetchMachines } from "./requests/useFetchMachines";
+import { useFetchBookings } from "./requests/useFetchBookings";
+import { useCreateBooking } from "./requests/useCreateBooking";
+import { useDeleteBooking } from "./requests/useDeleteBooking";
 
 export default function App() {
-  const [events, setEvents] = useState<BookingEvent[]>(() => {
-    try {
-      const stored = localStorage.getItem("turnos");
-      return stored ? JSON.parse(stored, reviver) : sampleEvents;
-    } catch {
-      return sampleEvents;
+  const { bookings, loading: loadingBookings, error: errorBookings, refetch: refetchBookings } = useFetchBookings();
+  const { machines, loading: loadingMachines, error: errorMachines, refetch: refetchMachines } = useFetchMachines();
+  const { students, loading: loadingStudents, error: errorStudents, refetch: refetchStudents } = useFetchStudents();
+
+  // Hooks para crear y eliminar (con refetch automático al éxito)
+  const { createBooking, loading: creatingBooking, error: createError } = useCreateBooking(refetchBookings);
+  const { deleteBooking, loading: deletingBooking, error: deleteError } = useDeleteBooking(refetchBookings);
+
+  const handleAddEvent = async (e: BookingEvent) => {
+    const success = await createBooking(e);
+    if (success) {
+      console.log('✅ Turno creado exitosamente');
+    } else {
+      console.error('❌ Error al crear turno');
     }
-  });
+  };
 
-  const [machines] = useState<Machine[]>([
-    { id: "M1", name: "Agujereadora 1", color: "#1E88E5" },
-    { id: "M2", name: "Agujereadora 2", color: "#43A047" },
-    { id: "M3", name: "Agujereadora 3", color: "#F4511E" },
-  ]);
-
-    const [students] = useState<Student[]>([
-    { id: "12", name: "Juana", surname: "Rodriguez" },
-    { id: "1", name: "Diego", surname: "Fernandez" },
-    { id: "69", name: "Emiliano", surname: "Politano" },
-  ]);
-
-  useEffect(() => {
-    localStorage.setItem("turnos", JSON.stringify(events, replacer));
-  }, [events]);
-
-  const addEvent = (e: BookingEvent) => setEvents((prev) => [...prev, e]);
-  const updateEvent = (updated: BookingEvent) =>
-    setEvents((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
-  const deleteEvent = (id: string) =>
-    setEvents((prev) => prev.filter((e) => e.id !== id));
+  const handleDeleteEvent = async (id: string) => {
+    const success = await deleteBooking(id);
+    if (success) {
+      console.log('✅ Turno eliminado exitosamente');
+    } else {
+      console.error('❌ Error al eliminar turno');
+    }
+  };
 
   return (
     <div className="app-shell">
@@ -66,21 +44,68 @@ export default function App() {
 
       <main className="main-grid">
         <aside className="sidebar">
-          <MachineList machines={machines} />
-           <StudentList students={students} />
+          {loadingMachines ? (
+            <p>Cargando agujereadoras...</p>
+          ) : errorMachines ? (
+            <div>
+              <p>Error al cargar agujereadoras: {errorMachines}</p>
+              <button onClick={refetchMachines}>Reintentar</button>
+            </div>
+          ) : (
+            <MachineList machines={machines} />
+          )}
+
+          {loadingStudents ? (
+            <p>Cargando alumnos...</p>
+          ) : errorStudents ? (
+            <div>
+              <p>Error al cargar alumnos: {errorStudents}</p>
+              <button onClick={refetchStudents}>Reintentar</button>
+            </div>
+          ) : (
+            <StudentList students={students} />
+          )}
+
+          {/* Mostrar errores de creación/eliminación */}
+          {createError && (
+            <div style={{ color: '#d32f2f', padding: '10px', marginTop: '10px' }}>
+              ❌ {createError}
+            </div>
+          )}
+          {deleteError && (
+            <div style={{ color: '#d32f2f', padding: '10px', marginTop: '10px' }}>
+              ❌ {deleteError}
+            </div>
+          )}
+
+          {/* Indicador de operación en curso */}
+          {(creatingBooking || deletingBooking) && (
+            <div style={{ padding: '10px', marginTop: '10px' }}>
+              ⏳ {creatingBooking ? 'Creando turno...' : 'Eliminando turno...'}
+            </div>
+          )}
         </aside>
 
-      
-
         <section className="calendar-area">
-          <CalendarView
-            events={events}
-            machines={machines}
-            students={students}
-            onAdd={addEvent}
-            onUpdate={updateEvent}
-            onDelete={deleteEvent}
-          />
+          {loadingBookings ? (
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              <p>⏳ Cargando turnos...</p>
+            </div>
+          ) : errorBookings ? (
+            <div style={{ padding: '20px', color: '#d32f2f' }}>
+              <p>❌ Error al cargar turnos: {errorBookings}</p>
+              <button onClick={refetchBookings}>Reintentar</button>
+            </div>
+          ) : (
+            <CalendarView
+              events={bookings}
+              machines={machines}
+              students={students}
+              onAdd={handleAddEvent}
+              onUpdate={() => {}} // Por ahora vacío
+              onDelete={handleDeleteEvent}
+            />
+          )}
         </section>
       </main>
     </div>
