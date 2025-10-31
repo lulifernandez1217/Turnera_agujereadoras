@@ -4,16 +4,21 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const env = process.env.NODE_ENV || 'development';
+console.log(`⚙️  Cargando configuración para entorno: ${env}`);
+const db_url = process.env.DATABASE_URL || 'postgres://admin:admin@localhost:5432/db';
+console.log(db_url);
+
 const sequelize = new Sequelize(
-  process.env.DATABASE_URL || 'postgres://admin:admin@localhost:5432/db',
+  db_url,
   {
     dialect: 'postgres',
     dialectOptions: {
-      ssl: process.env.NODE_ENV === 'production' 
+      ssl: env === 'production' 
         ? { rejectUnauthorized: false } 
         : false
     },
-    logging: process.env.NODE_ENV === 'development' ? console.log : false
+    logging: env === 'development' ? console.log : false
   }
 );
 
