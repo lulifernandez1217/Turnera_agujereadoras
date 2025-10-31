@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import type { BookingEvent, Machine } from "../types";
+import type { BookingEvent, Machine ,Student} from "../types";
 
 interface Props {
   open: boolean;
   onClose: () => void;
   initial?: Partial<BookingEvent> | null;
   machines: Machine[];
+  students: Student[];  
   onSave: (event: BookingEvent) => void;
   onDelete: (id: string) => void;
 }
@@ -15,6 +16,7 @@ export const BookingModal: React.FC<Props> = ({
   onClose,
   initial,
   machines,
+  students,
   onSave,
   onDelete,
 }) => {
@@ -40,7 +42,7 @@ export const BookingModal: React.FC<Props> = ({
     const newEvent: BookingEvent = {
       id: form.id || `evt-${Math.random().toString(36).slice(2, 9)}`,
       title: form.title,
-      user: form.user || "",
+      studentId: form.studentId || "",
       machineId: form.machineId,
       start: new Date(form.start),
       end: new Date(form.end),
@@ -93,8 +95,19 @@ export const BookingModal: React.FC<Props> = ({
           </label>
 
           <label>
-            Usuario
-            <input name="user" value={form.user || ""} onChange={change} />
+            Alumno
+           <select
+              name="studentId"
+              value={form.studentId || ""}
+              onChange={change}
+            >
+             <option value="">-- Selecciona --</option>
+              {students.map((s) => ( 
+                <option key={s.id} value={s.id}>
+                  {s.name} {s.surname}
+                </option>
+              ))}
+             </select>
           </label>
 
           <label>

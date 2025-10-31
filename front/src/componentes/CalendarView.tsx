@@ -1,13 +1,14 @@
 import React, { useState, useMemo } from "react";
-import { Calendar, Views } from "react-big-calendar";
+import { Calendar, Views, type SlotInfo } from "react-big-calendar";
 import { localizer } from "../Lib/Localizer";
-import type { BookingEvent, Machine } from "../types";
+import type { BookingEvent, Machine, Student } from "../types";
 import BookingModal from "./BookingModal";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
 interface Props {
   events: BookingEvent[];
   machines: Machine[];
+  students: Student[];
   onAdd: (e: BookingEvent) => void;
   onUpdate: (e: BookingEvent) => void;
   onDelete: (id: string) => void;
@@ -16,28 +17,35 @@ interface Props {
 const CalendarView: React.FC<Props> = ({
   events,
   machines,
+  students,
   onAdd,
   onUpdate,
   onDelete,
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Partial<BookingEvent> | null>(null);
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   const mappedEvents = useMemo(
     () =>
-      events.map((e) => ({
-        ...e,
-        title: `${e.title} — ${e.user}`,
-      })),
-    [events]
+      events.map((e) => {
+        const student = students.find((s) => s.id === e.studentId);
+        return {
+          ...e,
+          start: new Date(e.start),
+          end: new Date(e.end),
+          title: `${e.title}${student ? " — " + student.name + " " + student.surname : ""}`,
+        };
+      }),
+    [events, students]
   );
 
-  const handleSelectSlot = (slot: any) => {
+  const handleSelectSlot = (slot: SlotInfo) => {
     setEditing({
       start: slot.start,
       end: slot.end,
       title: "",
-      user: "",
+      studentId: "",
       machineId: "",
     });
     setModalOpen(true);
@@ -50,7 +58,11 @@ const CalendarView: React.FC<Props> = ({
 
   const handleSave = (evt: BookingEvent) => {
     const exists = events.find((e) => e.id === evt.id);
-    exists ? onUpdate(evt) : onAdd(evt);
+    if (exists) {
+      onUpdate(evt);
+    } else {
+      onAdd(evt);
+    }
   };
 
   const eventStyleGetter = (event: BookingEvent) => {
@@ -77,9 +89,11 @@ const CalendarView: React.FC<Props> = ({
         onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent}
         defaultView={Views.WEEK}
-        views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
+        views={[Views.WEEK]}
         eventPropGetter={eventStyleGetter}
         style={{ height: "75vh" }}
+        date={currentDate}
+        onNavigate={(newDate) => setCurrentDate(newDate)}
       />
 
       <BookingModal
@@ -90,6 +104,7 @@ const CalendarView: React.FC<Props> = ({
           setEditing(null);
         }}
         machines={machines}
+        students={students}
         onSave={handleSave}
         onDelete={onDelete}
       />

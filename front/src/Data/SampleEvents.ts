@@ -7,7 +7,7 @@ export const sampleEvents: BookingEvent[] = [
     start: new Date(new Date().setHours(9, 0, 0, 0)),
     end: new Date(new Date().setHours(10, 0, 0, 0)),
     machineId: "M1",
-    user: "Alumno A",
+    studentId: "Alumno A",
   },
   {
     id: "e2",
@@ -15,6 +15,6 @@ export const sampleEvents: BookingEvent[] = [
     start: new Date(new Date().setHours(11, 0, 0, 0)),
     end: new Date(new Date().setHours(12, 30, 0, 0)),
     machineId: "M2",
-    user: "Alumno B",
+    studentId: "Alumno B",
   },
 ];
